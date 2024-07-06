@@ -1,0 +1,55 @@
+from flask import Flask, render_template, request
+import numpy as np
+import cv2
+import tensorflow as tf
+import base64
+
+app = Flask(__name__, template_folder='Data/templates')
+
+# Load the saved model
+model_path = 'Data/imageclassifier.h5'
+model = tf.keras.models.load_model(model_path)
+
+# Function to preprocess the image
+def preprocess_image(img):
+    img = tf.image.resize(img, (256, 256))
+    img = img / 255.0
+    img = np.expand_dims(img, axis=0)
+    return img
+
+# Function to predict and return result
+def predict_image(img):
+    img = preprocess_image(img)
+    prediction = model.predict(img)
+    return prediction[0][0]
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    file = request.files['image']
+    img = cv2.imdecode(np.frombuffer(file.read(), np.uint8), -1)
+
+    # Get prediction result
+    prediction = predict_image(img)
+
+    # Determine result message and accuracy
+    if prediction > 0.5:
+        result = "The uploaded image depicts a sad individual(s)."
+        accuracy = min(prediction * 100, 100)
+    else:
+        result = "The uploaded image depicts a happy individual(s)."
+        accuracy = min((1 - prediction) * 100, 100)
+
+    # Prepare image for display in HTML
+    _, buffer = cv2.imencode('.jpg', img)
+    img_str = base64.b64encode(buffer).decode('utf-8')
+    uploaded_image = f'data:image/jpeg;base64,{img_str}'
+
+    return render_template('index.html', result=result, uploaded_image=uploaded_image,
+                           accuracy=accuracy)
+
+if __name__ == '__main__':
+    app.run(debug=True)
