@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification Web App</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .result {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        .accuracy {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .file-upload {
+            margin-bottom: 20px;
+        }
+        .submit-button {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Classification Web App</h1>
+        <div class="image-container">
+            {% if uploaded_image %}
+                <img src="{{ uploaded_image }}" alt="Uploaded Image" width="400">
+            {% endif %}
+        </div>
+        <div class="result">
+            {{ result }}
+        </div>
+        <div class="accuracy">
+            Accuracy: {{ accuracy }}%
+        </div>
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept=".jpg, .jpeg, .png">
+            <br><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>
